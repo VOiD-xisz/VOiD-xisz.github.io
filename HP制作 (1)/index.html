@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOiD-LAB. — XISZ / 来世</title>
+  <link rel="icon" href="favicon.png" type="image/png" sizes="256x256">
+  <link rel="apple-touch-icon" href="favicon.png" sizes="256x256">
+  <style>
+    :root {
+      --bg: #030305;
+      --bg2: #0a0a0f;
+      --bg3: #12121a;
+      --border: #1a1a2a;
+      --border2: #2a2a3a;
+      --accent: #7F77DD;
+      --accent-light: #CECBF6;
+      --text: #dddae8;
+      --text-muted: #b5b2cc;
+      --text-dim: #7e7c96;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      background: #030305;
+      color: var(--text);
+      font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', serif, sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ━━━━ SPOTLIGHT ━━━━ */
+    .spotlight {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(127, 119, 221, 0.3) 0%, rgba(127, 119, 221, 0.08) 50%, transparent 75%);
+      pointer-events: none;
+      z-index: 5;
+      filter: blur(80px);
+      mix-blend-mode: screen;
+    }
+
+    /* ━━━━ GRAIN & PATTERN ━━━━ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+      opacity: 0.12;
+    }
+
+    /* ━━━━ COLLAPSE PARTICLES ━━━━ */
+    .particles-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(127, 119, 221, 0.6);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(127, 119, 221, 0.4);
+      animation: fall 3s linear forwards;
+    }
+
+    @keyframes fall {
+      0% {
+        opacity: 1;
+        transform: translateY(-50px) rotate(0deg);
+      }
+      70% {
+        opacity: 0.8;
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ━━━━ NAV ━━━━ */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4rem;
+      background: rgba(3, 3, 5, 0.95);
+      backdrop-filter: blur(25px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.3em;
+      color: var(--text);
+      transition: all 0.3s;
+    }
+
+    .nav-logo:hover { color: var(--accent-light); }
+
+    .nav-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--accent);
+      border-radius: 2px;
+    }
+
+    .nav-links { display: none; gap: 12px; }
+
+    .nav-btn {
+      padding: 9px 24px;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: 0.5px solid transparent;
+      background: transparent;
+      border-radius: 2px;
+      transition: all 0.3s;
+      font-family: inherit;
+      text-transform: uppercase;
+    }
+
+    .nav-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(127, 119, 221, 0.1);
+    }
+
+    .nav-btn.active {
+      color: var(--accent-light);
+      border-color: var(--accent);
+      background: rgba(127, 119, 221, 0.2);
+    }
+
+    /* ━━━━ PAGES ━━━━ */
+    .page {
+      position: fixed;
+      inset: 0;
+      top: 64px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.7s;
+      overflow-y: auto;
+      overflow-x: hidden;
+      z-index: 10;
+    }
+
+    .page.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: all;
+    }
+
+    /* ━━━━ HOME PAGE ━━━━ */
+    #home {
+      min-height: calc(100vh - 64px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 5rem 3rem;
+    }
+
+    .home-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(127, 119, 221, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 30%, rgba(100, 80, 200, 0.1) 0%, transparent 40%),
+        linear-gradient(180deg, #020203 0%, #0a0a12 40%, #05050a 100%);
+      z-index: -1;
+    }
+
+    .home-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(127, 119, 221, 0.08) 20px, rgba(127, 119, 221, 0.08) 21px),
+        repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(127, 119, 221, 0.08) 20px, rgba(127, 119, 221, 0.08) 21px);
+      pointer-events: none;
+      opacity: 0.9;
+      transform: perspective(800px) rotateX(2deg) rotateY(3deg) skewY(1deg);
+      z-index: 1;
+    }
+
+    .home-content {
+      text-align: center;
+      max-width: 900px;
+      animation: fadeInUp 1.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      position: relative;
+      z-index: 100;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes flicker {
+      0% { opacity: 1; }
+      48% { opacity: 1; }
+      50% { opacity: 0.1; }
+      52% { opacity: 1; }
+      100% { opacity: 1; }
+    }
+
+    .home-logo {
+      animation: fadeIn 1.5s ease forwards, flicker 6s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+    }
+
+    .home-logo {
+      margin-bottom: 4rem;
+      animation: fadeIn 1.5s ease forwards;
+    }
+
+    .home-logo img, .home-logo svg {
+      max-width: 380px;
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 0 40px rgba(127, 119, 221, 0.5));
+    }
+
+    .home-text {
+      margin-bottom: 3rem;
+    }
+
+    .home-text-main {
+      font-size: 56px;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      margin-bottom: 1rem;
+      word-spacing: 0.5em;
+    }
+
+    .home-text-main em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .home-text-sub {
+      font-size: 11px;
+      letter-spacing: 0.35em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+      font-weight: 300;
+      text-shadow: 0 0 20px rgba(127, 119, 221, 0.3);
+    }
+
+    .home-divider {
+      width: 4px;
+      height: 60px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+      margin: 0 auto 3.5rem;
+    }
+
+    .home-tagline {
+      font-size: 17px;
+      color: var(--text-muted);
+      line-height: 2.2;
+      letter-spacing: 0.08em;
+      margin-bottom: 4.5rem;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+      font-style: italic;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(127, 119, 221, 0.2);
+      filter: drop-shadow(0 0 8px rgba(127, 119, 221, 0.15));
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 3rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 48px;
+      border: 1.5px solid var(--accent);
+      background: transparent;
+      color: var(--accent-light);
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: inherit;
+      text-transform: uppercase;
+    }
+
+    .cta-btn:hover {
+      background: rgba(127, 119, 221, 0.25);
+      border-color: var(--accent-light);
+      transform: translateY(-4px);
+      box-shadow: 0 15px 40px rgba(127, 119, 221, 0.25);
+    }
+
+    /* ━━━━ CONTENT WRAPPER ━━━━ */
+    .content-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 6rem 4rem 7rem;
+      position: relative;
+      z-index: 3;
+    }
+
+    .page-header {
+      margin-bottom: 5rem;
+    }
+
+    .page-label {
+      font-size: 8px;
+      letter-spacing: 0.35em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .page-label::before {
+      content: '';
+      width: 20px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .page-title {
+      font-size: 48px;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+    }
+
+    /* ━━━━ PROFILE PAGE ━━━━ */
+    #profile { padding-top: 3rem; }
+
+    .profile-hero {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 3rem;
+      align-items: start;
+      margin-bottom: 6rem;
+    }
+
+    .profile-hero-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      flex-shrink: 0;
+    }
+
+    .profile-main-image {
+      width: 280px;
+      aspect-ratio: 2/3;
+      border: 1.5px solid var(--border2);
+      border-radius: 2px;
+      overflow: hidden;
+      background: rgba(10, 10, 18, 0.7);
+      position: relative;
+    }
+
+    .profile-main-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: drop-shadow(0 20px 60px rgba(127, 119, 221, 0.4));
+      display: block;
+      animation: none !important;
+    }
+
+    #fullBodyFrame {
+      border: none;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    #fullBodyFrame img {
+      object-fit: contain;
+      filter: drop-shadow(0 20px 60px rgba(127, 119, 221, 0.4));
+    }
+
+    .profile-expressions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.2rem;
+    }
+
+    .expression-variant {
+      width: 140px;
+      aspect-ratio: 1;
+      border: 1px solid var(--border2);
+      padding: 0.6rem;
+      border-radius: 2px;
+      background: rgba(127,119,221,0.05);
+      cursor: pointer;
+      box-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .expression-variant:hover {
+      border-color: var(--accent);
+      background: rgba(127,119,221,0.12);
+      transform: translateY(-4px);
+      box-shadow: 3px 8px 16px rgba(127, 119, 221, 0.3);
+    }
+
+    .expression-variant img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 0px;
+    }
+
+    .profile-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1200px;
+    }
+
+    .profile-frame {
+      width: 100%;
+      max-width: 380px;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, rgba(127, 119, 221, 0.15) 0%, rgba(127, 119, 221, 0.05) 100%);
+      border: 1.5px solid var(--border2);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 0 60px rgba(127, 119, 221, 0.1);
+    }
+
+    .profile-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(127, 119, 221, 0.2), transparent 70%);
+      pointer-events: none;
+    }
+
+    .profile-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: drop-shadow(0 20px 60px rgba(127, 119, 221, 0.4));
+      animation: subtleFloat 5s ease-in-out infinite;
+    }
+
+    @keyframes subtleFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .profile-role {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .profile-name {
+      font-size: 44px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+    }
+
+    .profile-debut {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+    }
+
+    .profile-desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 2.1;
+      margin: 1.5rem 0;
+    }
+
+    /* ━━━━ VOICE CHART ━━━━ */
+    .voice-section {
+      border: 1.5px solid var(--border2);
+      border-radius: 2px;
+      padding: 4rem;
+      background: rgba(10, 10, 18, 0.7);
+      backdrop-filter: blur(12px);
+      margin-bottom: 4rem;
+    }
+
+    .section-title {
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      color: var(--accent-light);
+      margin-bottom: 3.5rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-transform: uppercase;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+      border-radius: 2px;
+    }
+
+    .chart-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 400px;
+    }
+
+    .radar-chart {
+      width: 100%;
+      max-width: 380px;
+      height: 380px;
+    }
+
+    /* ━━━━ ARCHIVES ━━━━ */
+    .archives-section {
+      border: 1.5px solid var(--border2);
+      border-radius: 2px;
+      padding: 4rem;
+      background: rgba(10, 10, 18, 0.7);
+      backdrop-filter: blur(12px);
+      margin-top: 4rem;
+    }
+
+    .section-tabs {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 3.5rem;
+      border-bottom: 0.5px solid var(--border2);
+      padding-bottom: 1.5rem;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .section-tabs::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .section-tabs::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .section-tabs::-webkit-scrollbar-thumb {
+      background: rgba(127, 119, 221, 0.3);
+      border-radius: 2px;
+    }
+
+    .section-tabs::-webkit-scrollbar-thumb:hover {
+      background: rgba(127, 119, 221, 0.5);
+    }
+
+    .archives-content-wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .archives-auto-scroll {
+      display: flex;
+      gap: 2rem;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 1rem;
+    }
+
+    .archives-auto-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .archives-auto-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .archives-auto-scroll::-webkit-scrollbar-thumb {
+      background: rgba(127, 119, 221, 0.3);
+      border-radius: 2px;
+    }
+
+    .archives-auto-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(127, 119, 221, 0.5);
+    }
+
+    .archive-card {
+      flex: 0 0 400px;
+      min-height: 225px;
+    }
+
+    .tab-btn {
+      padding: 11px 24px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 10px;
+      letter-spacing: 0.13em;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+      font-family: inherit;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover { color: var(--accent); }
+
+    .tab-btn.active {
+      color: var(--accent-light);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .tab-content.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .playlist-wrapper {
+      aspect-ratio: 16 / 9;
+      border-radius: 2px;
+      overflow: hidden;
+      border: 1px solid var(--border2);
+      background: var(--bg2);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+
+    .playlist-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ━━━━ REQUEST PAGE ━━━━ */
+    #request { padding-top: 3rem; }
+
+    .form-section {
+      max-width: 700px;
+      margin: 0 auto;
+      border: 1.5px solid var(--border2);
+      border-radius: 2px;
+      padding: 4rem;
+      background: rgba(10, 10, 18, 0.7);
+      backdrop-filter: blur(12px);
+    }
+
+    .form-group {
+      margin-bottom: 2.5rem;
+    }
+
+    .form-label {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 14px 18px;
+      background: rgba(26, 26, 42, 0.8);
+      border: 0.5px solid var(--border2);
+      border-radius: 2px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      transition: all 0.3s;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(26, 26, 42, 0.95);
+      box-shadow: 0 0 20px rgba(127, 119, 221, 0.2);
+    }
+
+    .form-textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(127, 119, 221, 0.3), rgba(127, 119, 221, 0.1));
+      border: 1px solid var(--accent);
+      color: var(--accent-light);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.4s;
+      font-family: inherit;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .submit-btn:hover {
+      background: linear-gradient(135deg, rgba(127, 119, 221, 0.5), rgba(127, 119, 221, 0.2));
+      box-shadow: 0 10px 30px rgba(127, 119, 221, 0.3);
+      transform: translateY(-2px);
+    }
+
+    /* ━━━━ FOOTER ━━━━ */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 76px;
+      background: rgba(3, 3, 5, 0.95);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3.5rem;
+      z-index: 100;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 20px;
+    }
+
+    .social-link:hover {
+      border-color: var(--accent);
+      color: var(--accent-light);
+      background: rgba(127, 119, 221, 0.15);
+      transform: translateY(-5px);
+    }
+
+    /* ━━━━ RESPONSIVE ━━━━ */
+    @media (max-width: 768px) {
+      nav { padding: 0 2rem; height: 56px; }
+      .content-wrap { padding: 4rem 2rem 5rem; }
+      .home-text-main { font-size: 40px; }
+      .profile-hero { grid-template-columns: 1fr; gap: 3rem; }
+      .voice-section, .archives-section, .form-section { padding: 2.5rem; }
+      footer { height: 64px; gap: 2rem; }
+      .social-link { width: 44px; height: 44px; font-size: 18px; }
+    }
+
+    @media (max-width: 480px) {
+      .home-text-main { font-size: 32px; }
+      .profile-name { font-size: 32px; }
+      .cta-buttons { gap: 1.5rem; }
+      .cta-btn { padding: 14px 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="particles-container" id="particlesContainer"></div>
+  <div class="spotlight" id="spotlight"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo" onclick="switchPage('home')" style="gap: 8px;">
+      <img src="VOiD-LOGO.png" alt="VOiD-LAB." style="height: 32px; width: auto; object-fit: contain;">
+    </div>
+    <div class="nav-links">
+      <button class="nav-btn active" onclick="switchNav(this, 'home')">HOME</button>
+      <button class="nav-btn" onclick="switchNav(this, 'profile')">PROFILE</button>
+      <button class="nav-btn" onclick="switchNav(this, 'works')">WORKS</button>
+      <button class="nav-btn" onclick="switchNav(this, 'request')">COMMISSION</button>
+    </div>
+  </nav>
+
+  <!-- HOME PAGE -->
+  <div id="home" class="page active">
+    <video autoplay muted loop playsinline id="homeVideo" style="position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.15; filter: blur(8px); pointer-events: none;">
+      <source src="yugami.MP4" type="video/mp4">
+    </video>
+    <video autoplay muted loop playsinline id="homeVideoClear" style="position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.15; pointer-events: none; mask-image: radial-gradient(circle 150px at 50% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%); -webkit-mask-image: radial-gradient(circle 150px at 50% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);">
+      <source src="yugami.MP4" type="video/mp4">
+    </video>
+    <div class="home-content">
+      <div class="home-logo">
+        <img src="VOiD-LOGO.png" alt="VOiD-LAB. Logo" style="max-width: 100%; height: auto; filter: drop-shadow(0 0 40px rgba(127, 119, 221, 0.5));">
+      </div>
+
+      <div class="home-text">
+        <div class="home-text-sub">XISZ / 来世</div>
+      </div>
+
+      <div class="home-divider"></div>
+
+      <p class="home-tagline">
+        無邪気な破壊と創造の狭間へ<br>
+        ようこそ
+      </p>
+
+      <div class="cta-buttons">
+        <button class="cta-btn" onclick="switchPage('profile')">
+          <span>▸▸</span>
+          <span>PROFILE</span>
+        </button>
+        <button class="cta-btn" onclick="switchPage('works')">
+          <span>▸▸</span>
+          <span>WORKS</span>
+        </button>
+        <button class="cta-btn" onclick="switchPage('request')">
+          <span>▸▸</span>
+          <span>COMMISSION</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE PAGE -->
+  <div id="profile" class="page">
+    <video autoplay muted loop playsinline style="position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: 0.1; pointer-events: none;">
+      <source src="【黒地に白】アナログテレビ風ノイズ.mp4" type="video/mp4">
+    </video>
+    <div class="content-wrap">
+      <div class="page-header">
+        <div class="page-label">Voice × Presence</div>
+        <h2 class="page-title">XISZ</h2>
+      </div>
+
+      <!-- Hero with Icon & Profile Info -->
+      <div style="display: grid; grid-template-columns: auto 1fr; gap: 3rem; align-items: start; margin-bottom: 4rem;">
+        <div class="profile-frame" style="width: 120px; height: 120px; flex-shrink: 0;">
+          <img src="ICON.png" alt="XISZ - アイコン" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div>
+          <div class="profile-role">Vsinger, Mixing Engineer</div>
+          <h3 class="profile-name">來世｜LiESE</h3>
+          <div class="profile-debut">2025年4月4日 デビュー</div>
+
+          <div style="font-size: 12px; margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; color: var(--text-muted);">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="color: var(--accent);">𝕏</span>
+              <a href="https://twitter.com/xisz_" target="_blank" style="color: var(--accent-light); text-decoration: underline;">@xisz_</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="color: var(--accent);">📺</span>
+              <a href="https://www.youtube.com/@xisz_" target="_blank" style="color: var(--accent-light); text-decoration: underline;">@xisz_</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="color: var(--accent);">❓</span>
+              <a href="https://marshmallow-qa.com/xisz_?t=tBM3si" target="_blank" style="color: var(--accent-light); text-decoration: underline;">Marshmallow</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="color: var(--accent);">🔗</span>
+              <a href="https://setlink.jp/public/958f390f-830e-4786-9320-4e11790bdd8a" target="_blank" style="color: var(--accent-light); text-decoration: underline;">Setlink</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Description -->
+      <div style="max-width: 800px; margin-bottom: 5rem;">
+        <p class="profile-desc">
+          幼くあどけない響きのなかに、容赦のない「無邪気な残酷さ」を潜ませる。相反する要素が混ざり合う二面性のある歌声こそが、彼女が掲げる至高の美学である。
+        </p>
+        <p class="profile-desc">
+          活動の主軸である楽曲カバーにおいては、原曲への敬意を払いながらも、その骨格を自らの世界観で解体し、「來世」という物語の1ページへと完全に塗り替えてしまう。
+        </p>
+        <p class="profile-desc">
+          彼女の執着は歌唱のみに留まらない。自らエンジニアリングの手を加え、緻密に計算されたサウンド演出を施すことで、聴き手の耳元に「実在する悪夢」を現出させる。その徹底したセルフミックスへの拘りは、音の一つひとつにまで自身の美学を浸透させるための、不可欠な工程に他ならない。
+        </p>
+        <p class="profile-desc">
+          彼女にとって歌唱、そして調声とは、単なる表現ではない。重厚な死生観と美しさを融合させ、既存の音楽を自らの手で「再構築」する儀式である。その無垢な破壊と創造のあわいに、聴き手は抗いがたい魅惑を見出すだろう。
+        </p>
+      </div>
+
+      <!-- LiESE Logo Divider -->
+      <div style="display: flex; align-items: center; justify-content: center; margin: 6rem 0; padding: 3rem 0; border-top: 1px solid var(--border2); border-bottom: 1px solid var(--border2);">
+        <img src="LiESE_Logo.png" alt="LiESE Logo" style="max-width: 180px; height: auto; opacity: 0.8;">
+      </div>
+
+      <!-- Profile Visual & Expression Layout -->
+      <div style="display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 2rem; align-items: start; margin-bottom: 6rem;">
+        <!-- Left: Full Body Image (Fixed) -->
+        <div class="profile-hero-left">
+          <div class="profile-main-image" id="fullBodyFrame">
+            <img src="zenshin.png" alt="XISZ - 全身" style="animation: none;">
+          </div>
+        </div>
+
+        <!-- Right: Expression Display (Hover to change) -->
+        <div class="profile-hero-left">
+          <div class="profile-main-image" id="expressionFrame" style="position: relative;">
+            <img src="hate.png" id="expressionDisplay" alt="表情差分" style="animation: none; object-position: center 25%;">
+            <!-- Hidden hover areas for expression switching -->
+            <div style="position: absolute; width: 33.33%; height: 100%; left: 0; top: 0; cursor: pointer;" data-expression="hate.png"></div>
+            <div style="position: absolute; width: 33.33%; height: 100%; left: 33.33%; top: 0; cursor: pointer;" data-expression="bikkuri.png"></div>
+            <div style="position: absolute; width: 33.33%; height: 100%; right: 0; top: 0; cursor: pointer;" data-expression="niconico.png"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice Chart -->
+      <div class="voice-section">
+        <div class="section-title">音声特性スコア</div>
+        <div class="chart-container">
+          <svg class="radar-chart" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">
+            <!-- グリッドライン -->
+            <circle cx="240" cy="240" r="150" fill="none" stroke="rgba(127,119,221,0.2)" stroke-width="1"/>
+            <circle cx="240" cy="240" r="120" fill="none" stroke="rgba(127,119,221,0.15)" stroke-width="1"/>
+            <circle cx="240" cy="240" r="90" fill="none" stroke="rgba(127,119,221,0.1)" stroke-width="1"/>
+            <circle cx="240" cy="240" r="60" fill="none" stroke="rgba(127,119,221,0.05)" stroke-width="1"/>
+            <circle cx="240" cy="240" r="30" fill="none" stroke="rgba(127,119,221,0.05)" stroke-width="1"/>
+
+            <!-- ポイント線（5項目用正五角形） -->
+            <line x1="240" y1="240" x2="240" y2="90" stroke="rgba(127,119,221,0.1)" stroke-width="1"/>
+            <line x1="240" y1="240" x2="382.7" y2="193.6" stroke="rgba(127,119,221,0.1)" stroke-width="1"/>
+            <line x1="240" y1="240" x2="328.2" y2="361.4" stroke="rgba(127,119,221,0.1)" stroke-width="1"/>
+            <line x1="240" y1="240" x2="151.8" y2="361.4" stroke="rgba(127,119,221,0.1)" stroke-width="1"/>
+            <line x1="240" y1="240" x2="97.3" y2="193.6" stroke="rgba(127,119,221,0.1)" stroke-width="1"/>
+
+            <!-- データポリゴン (粒状感92, 流動性78, 距離感86, 不規則性81, 透明感18) -->
+            <!-- ポイントはJavaScriptで動的に計算 -->
+            <polygon id="radarPolygon" fill="rgba(127,119,221,0.3)" stroke="var(--accent)" stroke-width="2"/>
+
+            <!-- スコア値表示 -->
+            <text x="240" y="70" text-anchor="middle" font-size="12" fill="var(--accent-light)" font-weight="600">92</text>
+            <text x="400" y="200" text-anchor="start" font-size="12" fill="var(--accent-light)" font-weight="600">78</text>
+            <text x="345" y="380" text-anchor="middle" font-size="12" fill="var(--accent-light)" font-weight="600">86</text>
+            <text x="135" y="380" text-anchor="middle" font-size="12" fill="var(--accent-light)" font-weight="600">81</text>
+            <text x="80" y="200" text-anchor="end" font-size="12" fill="var(--accent-light)" font-weight="600">18</text>
+
+            <!-- ラベル -->
+            <text x="240" y="45" text-anchor="middle" font-size="14" fill="var(--text-dim)" font-weight="500">粒状感</text>
+            <text x="440" y="200" text-anchor="start" font-size="14" fill="var(--text-dim)" font-weight="500">流動性</text>
+            <text x="345" y="455" text-anchor="middle" font-size="14" fill="var(--text-dim)" font-weight="500">距離感</text>
+            <text x="135" y="455" text-anchor="middle" font-size="14" fill="var(--text-dim)" font-weight="500">不規則性</text>
+            <text x="40" y="200" text-anchor="end" font-size="14" fill="var(--text-dim)" font-weight="500">透明感</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Archives Section -->
+      <div class="archives-section">
+        <div class="section-title">ARCHIVES</div>
+        <div class="section-tabs">
+          <button class="tab-btn active" onclick="switchTab(this, 'archives-cover')">COVER</button>
+          <button class="tab-btn" onclick="switchTab(this, 'archives-shorts')">SHORTS</button>
+          <button class="tab-btn" onclick="switchTab(this, 'archives-singing')">SiNGiNG STREAM</button>
+          <button class="tab-btn" onclick="switchTab(this, 'archives-gaming')">GAMiNG STREAM</button>
+        </div>
+
+        <div id="archives-cover" class="tab-content active" data-playlist-id="PLmDG2bhYs8qOTySTb8qXaXERPAv4IRkgw">
+          <div id="videos-cover" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; min-height: 300px;">
+            <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">読み込み中...</div>
+          </div>
+        </div>
+
+        <div id="archives-shorts" class="tab-content" data-playlist-id="PLmDG2bhYs8qOmwyYPyfca1Hajx3zhlVMH">
+          <div id="videos-shorts" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; min-height: 300px;">
+            <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">読み込み中...</div>
+          </div>
+        </div>
+
+        <div id="archives-singing" class="tab-content" data-playlist-id="PLmDG2bhYs8qOoEYGrrW_KkExcJVEyJDaE">
+          <div id="videos-singing" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; min-height: 300px;">
+            <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">読み込み中...</div>
+          </div>
+        </div>
+
+        <div id="archives-gaming" class="tab-content" data-playlist-id="PLmDG2bhYs8qMxfFuFfulUuQ6HvcDXaLHr">
+          <div id="videos-gaming" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; min-height: 300px;">
+            <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">読み込み中...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Button -->
+      <div style="display: flex; justify-content: center; margin-top: 6rem; padding-top: 4rem; border-top: 1px solid var(--border2);">
+        <button class="cta-btn" onclick="switchPage('request')" style="gap: 8px;">
+          <span>▸▸</span>
+          <span>COMMISSION</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKS PAGE -->
+  <div id="works" class="page">
+    <div class="content-wrap">
+      <div class="page-header">
+        <div class="page-label">Works & Showcase</div>
+        <h2 class="page-title">実績・制作物</h2>
+      </div>
+
+      <div class="section-tabs">
+        <button class="tab-btn active" onclick="switchTab(this, 'showcase')">Showcase</button>
+        <button class="tab-btn" onclick="switchTab(this, 'full')">Full</button>
+        <button class="tab-btn" onclick="switchTab(this, 'shorts-works')">Shorts</button>
+      </div>
+
+      <div id="showcase" class="tab-content active" data-playlist-id="PLmDG2bhYs8qMLoSTmj_H7BjBYClna0Fsw">
+        <div id="videos-showcase" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; min-height: 300px;">
+          <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">読み込み中...</div>
+        </div>
+      </div>
+
+      <div id="full" class="tab-content" data-playlist-id="PLmDG2bhYs8qPaXibiV58ZItuwgGqWPHcV">
+        <div id="videos-full" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; min-height: 300px;">
+          <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">読み込み中...</div>
+        </div>
+      </div>
+
+      <div id="shorts-works" class="tab-content" data-playlist-id="PLmDG2bhYs8qN7lh7TZXvoom6wztXNMcGl">
+        <div id="videos-shorts-works" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; min-height: 300px;">
+          <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">読み込み中...</div>
+        </div>
+      </div>
+
+      <!-- Navigation Button -->
+      <div style="display: flex; justify-content: center; margin-top: 6rem; padding-top: 4rem; border-top: 1px solid var(--border2);">
+        <button class="cta-btn" onclick="switchPage('request')" style="gap: 8px;">
+          <span>▸▸</span>
+          <span>COMMISSION</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMISSION PAGE -->
+  <div id="request" class="page">
+    <div class="content-wrap">
+      <div class="page-header">
+        <div class="page-label">Vocal Mix Service</div>
+        <h2 class="page-title">COMMISSION</h2>
+      </div>
+
+      <!-- Service Info -->
+      <p style="color: var(--text-muted); margin-bottom: 3rem; line-height: 1.8;">
+        元音響屋さん(PA)・現役Vsingerによる、重厚感と世界観のあるVocal Mix。明瞭なボーカル処理と厚みのあるコーラス、空間演出が得意です。
+      </p>
+
+      <!-- MIX Strengths -->
+      <div style="margin-bottom: 5rem;">
+        <h3 style="font-size: 12px; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;">
+          <span style="width: 4px; height: 24px; background: linear-gradient(to bottom, var(--accent), transparent); border-radius: 2px;"></span>
+          MIX Strengths
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+          <div style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 2rem; background: rgba(127, 119, 221, 0.05);">
+            <div style="font-size: 28px; margin-bottom: 1rem; color: var(--accent);">🎙️</div>
+            <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 0.8rem; color: var(--text-light);">元音響屋（PA）の耳</h4>
+            <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">空間・音圧・定位を緻密にコントロール。</p>
+          </div>
+          <div style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 2rem; background: rgba(127, 119, 221, 0.05);">
+            <div style="font-size: 28px; margin-bottom: 1rem; color: var(--accent);">🎵</div>
+            <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 0.8rem; color: var(--text-light);">現役Vsingerの感性</h4>
+            <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">声の「色いい」を極限した MIX。</p>
+          </div>
+          <div style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 2rem; background: rgba(127, 119, 221, 0.05);">
+            <div style="font-size: 28px; margin-bottom: 1rem; color: var(--accent);">📊</div>
+            <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 0.8rem; color: var(--text-light);">明瞭なボーカル処理</h4>
+            <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">耳に引きつかないクリアな音質。</p>
+          </div>
+          <div style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 2rem; background: rgba(127, 119, 221, 0.05);">
+            <div style="font-size: 28px; margin-bottom: 1rem; color: var(--accent);">🎧</div>
+            <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 0.8rem; color: var(--text-light);">厚みのある空間演出</h4>
+            <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">世界観のあるコーラスと立体空間。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div style="margin-bottom: 5rem;">
+        <h3 style="font-size: 12px; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;">
+          <span style="width: 4px; height: 24px; background: linear-gradient(to bottom, var(--accent), transparent); border-radius: 2px;"></span>
+          Pricing
+        </h3>
+        <div class="section-tabs" style="margin-bottom: 2rem;">
+          <button class="tab-btn active" onclick="switchTab(this, 'pricing-full')">Full</button>
+          <button class="tab-btn" onclick="switchTab(this, 'pricing-chorus')">1Chorus</button>
+          <button class="tab-btn" onclick="switchTab(this, 'pricing-short')">Short</button>
+        </div>
+
+        <!-- Full -->
+        <div id="pricing-full" class="tab-content active" style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 2rem; background: rgba(10, 10, 18, 0.7);">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+            <div>
+              <div style="font-size: 32px; font-weight: 300; color: var(--text); margin-bottom: 0.5rem;">￥6,600</div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 1.5rem;">納期 10～14日（修正込み目安）</p>
+              <p style="font-size: 11px; color: var(--text-dim);">ボーカル追加 +￥3,000- / 1名</p>
+            </div>
+            <div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 0.8rem;"><strong>含まれる内容</strong></p>
+              <ul style="font-size: 11px; color: var(--text-muted); line-height: 1.8;">
+                <li>✓ エディット（ピッチ・タイミング補正）</li>
+                <li>✓ ミキシング</li>
+                <li>✓ エフェクト演出</li>
+                <li>✓ 空間演出</li>
+                <li>✓ ハモリ生成</li>
+                <li>✓ マスタリング（YouTube向け）</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1Chorus -->
+        <div id="pricing-chorus" class="tab-content" style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 2rem; background: rgba(10, 10, 18, 0.7);">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+            <div>
+              <div style="font-size: 32px; font-weight: 300; color: var(--text); margin-bottom: 0.5rem;">￥4,400</div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 1.5rem;">納期 10～14日（修正込み目安）</p>
+              <p style="font-size: 11px; color: var(--text-dim);">ボーカル追加 +￥2,200- / 1名</p>
+            </div>
+            <div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 0.8rem;"><strong>含まれる内容</strong></p>
+              <ul style="font-size: 11px; color: var(--text-muted); line-height: 1.8;">
+                <li>✓ エディット（ピッチ・タイミング補正）</li>
+                <li>✓ ミキシング</li>
+                <li>✓ エフェクト演出</li>
+                <li>✓ 空間演出</li>
+                <li>✓ ハモリ生成</li>
+                <li>✓ マスタリング（YouTube向け）</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Short -->
+        <div id="pricing-short" class="tab-content" style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 2rem; background: rgba(10, 10, 18, 0.7);">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+            <div>
+              <div style="font-size: 32px; font-weight: 300; color: var(--text); margin-bottom: 0.5rem;">￥2,200</div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 1.5rem;">納期 5～7日（修正込み目安）</p>
+              <p style="font-size: 11px; color: var(--text-dim);">ボーカル追加 +￥1,100- / 1名</p>
+            </div>
+            <div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 0.8rem;"><strong>含まれる内容</strong></p>
+              <ul style="font-size: 11px; color: var(--text-muted); line-height: 1.8;">
+                <li>✓ エディット（ピッチ・タイミング補正）</li>
+                <li>✓ ミキシング</li>
+                <li>✓ エフェクト演出</li>
+                <li>✓ 空間演出</li>
+                <li>✓ ハモリ生成</li>
+                <li>✓ マスタリング（YouTube向け）</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Options -->
+      <div style="margin-bottom: 5rem;">
+        <h3 style="font-size: 12px; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;">
+          <span style="width: 4px; height: 24px; background: linear-gradient(to bottom, var(--accent), transparent); border-radius: 2px;"></span>
+          Options
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+          <div style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 1.5rem; background: rgba(127, 119, 221, 0.05);">
+            <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-light);">短納期</h4>
+            <p style="font-size: 14px; color: var(--accent); font-weight: 600; margin-bottom: 0.5rem;">+50%</p>
+            <p style="font-size: 11px; color: var(--text-muted);">3日以内のお急ぎ品</p>
+          </div>
+          <div style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 1.5rem; background: rgba(127, 119, 221, 0.05);">
+            <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-light);">ハモリガイド作成</h4>
+            <p style="font-size: 14px; color: var(--accent); font-weight: 600; margin-bottom: 0.5rem;">+￥1,000～</p>
+            <p style="font-size: 11px; color: var(--text-muted);">尺により変動</p>
+          </div>
+          <div style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 1.5rem; background: rgba(127, 119, 221, 0.05);">
+            <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-light);">アカペラ書き出し</h4>
+            <p style="font-size: 14px; color: var(--accent); font-weight: 600; margin-bottom: 0.5rem;">要相談</p>
+            <p style="font-size: 11px; color: var(--text-muted);">ボーカルのみのデータ</p>
+          </div>
+          <div style="border: 1.5px solid var(--border2); border-radius: 2px; padding: 1.5rem; background: rgba(127, 119, 221, 0.05);">
+            <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-light);">Inst+ハモリ書き出し</h4>
+            <p style="font-size: 14px; color: var(--accent); font-weight: 600; margin-bottom: 0.5rem;">要相談</p>
+            <p style="font-size: 11px; color: var(--text-muted);">別ファイルでの書き出し</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 送っていただくデータ -->
+      <div style="margin-bottom: 3rem; border: 1.5px solid var(--border2); border-radius: 2px; padding: 2rem; background: rgba(10, 10, 18, 0.7);">
+        <h3 style="font-size: 12px; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 2rem;">送っていただくデータ</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+          <div>
+            <h4 style="font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 1rem;">Vocal</h4>
+            <p style="font-size: 11px; color: var(--text-muted); line-height: 1.8;">
+              WAV 24bit/48kHz 推奨<br>
+              モノラル<br>
+              頭出し
+            </p>
+          </div>
+          <div>
+            <h4 style="font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 1rem;">Inst</h4>
+            <p style="font-size: 11px; color: var(--text-muted); line-height: 1.8;">
+              本家配布のまま（原キー）
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 注意点 -->
+      <div style="margin-bottom: 4rem; border: 1px solid rgba(255, 100, 100, 0.3); border-radius: 2px; padding: 1.5rem; background: rgba(100, 50, 50, 0.1);">
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 0.5rem;">⚠ ハモリ生成・ガイド制作はオリジナルの完全再現ではありません。</p>
+        <p style="font-size: 11px; color: var(--text-muted);">⚠ 二日以内にお見積りとご依頼確認のご連絡をいたします。連絡がない場合はメールアドレス（xiszex@gmail.com）までご連絡をお願いいたします。</p>
+      </div>
+
+      <!-- Inquiry Form -->
+      <div class="form-section">
+        <h3 style="font-size: 12px; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;">
+          <span style="width: 4px; height: 24px; background: linear-gradient(to bottom, var(--accent), transparent); border-radius: 2px;"></span>
+          Order
+        </h3>
+
+        <form action="https://formspree.io/f/mojypjez" method="POST">
+          <h4 style="font-size: 12px; color: var(--text-light); margin-bottom: 2rem;">依頼フォーム</h4>
+
+          <!-- 2-Column Layout -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            <!-- Left Column -->
+            <div>
+              <div class="form-group">
+                <label class="form-label">名前（活動名）</label>
+                <input type="text" name="name" class="form-input" placeholder="Name" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">ご依頼メニュー</label>
+                <select name="menu" class="form-input" required>
+                  <option value="Full">Full</option>
+                  <option value="1Chorus">1Chorus</option>
+                  <option value="Short">Short</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">キー変更の有無</label>
+                <input type="text" name="key" class="form-input" placeholder="±0" value="±0" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">オプション選択</label>
+                <div style="margin-top: 0.8rem;">
+                  <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 12px;">
+                    <input type="checkbox" name="options" value="short_deadline"> 短納期 (+50%)
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 12px;">
+                    <input type="checkbox" name="options" value="acapella"> アカペラ書き出し
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 12px;">
+                    <input type="checkbox" name="options" value="harmony_guide"> ハモリガイド作成
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 12px;">
+                    <input type="checkbox" name="options" value="inst_harmony"> Inst+ハモリ書き出し
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+              <div class="form-group">
+                <label class="form-label">連絡先（Twitter ID/Email）</label>
+                <input type="text" name="contact" class="form-input" placeholder="@... / mail@" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">曲名 / アーティスト名</label>
+                <input type="text" name="track" class="form-input" placeholder="Song title" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">納期のご希望</label>
+                <input type="date" name="deadline" class="form-input" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full Width -->
+          <div class="form-group">
+            <label class="form-label">備考・参考URL（アップロード先のURLなど）</label>
+            <textarea name="message" class="form-textarea" placeholder="Message / URL" style="min-height: 120px;"></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn" style="width: 100%; padding: 1.2rem; font-size: 14px; background: rgba(127, 119, 221, 0.4); border-color: var(--accent); color: var(--accent-light); font-weight: 600;">この内容で依頼する（外部サービスへ送信します）</button>
+        </form>
+      </div>
+
+      <!-- Navigation Button -->
+      <div style="display: flex; justify-content: center; margin-top: 6rem; padding-top: 4rem; border-top: 1px solid var(--border2);">
+        <button class="cta-btn" onclick="switchPage('works')" style="gap: 8px;">
+          <span>▸▸</span>
+          <span>WORKS</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Slow down HOME background video & add cursor tracking
+    const homeVideo = document.getElementById('homeVideo');
+    const homeVideoClear = document.getElementById('homeVideoClear');
+
+    if (homeVideo) {
+      homeVideo.playbackRate = 0.5;
+    }
+    if (homeVideoClear) {
+      homeVideoClear.playbackRate = 0.5;
+      homeVideoClear.src = 'yugami.MP4';
+      homeVideoClear.innerHTML = '<source src="yugami.MP4" type="video/mp4">';
+    }
+
+    // Track cursor for HOME page video blur effect
+    document.addEventListener('mousemove', (e) => {
+      const isHomePage = document.getElementById('home').classList.contains('active');
+      if (!isHomePage || !homeVideoClear) return;
+
+      const x = e.clientX;
+      const y = e.clientY;
+      homeVideoClear.style.maskImage = `radial-gradient(circle 150px at ${x}px ${y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)`;
+      homeVideoClear.style.WebkitMaskImage = `radial-gradient(circle 150px at ${x}px ${y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)`;
+    });
+
+    // Track cursor for background blur effect on HOME page
+    document.addEventListener('mousemove', (e) => {
+      const isHomePage = document.getElementById('home').classList.contains('active');
+      if (!isHomePage || !homeBgVideoClear) return;
+
+      const x = e.clientX;
+      const y = e.clientY;
+      homeBgVideoClear.style.maskImage = `radial-gradient(circle 150px at ${x}px ${y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)`;
+      homeBgVideoClear.style.WebkitMaskImage = `radial-gradient(circle 150px at ${x}px ${y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)`;
+    });
+
+    // Random page brightness flicker effect
+    function triggerRandomFlicker() {
+      const delay = Math.random() * 15000 + 20000; // 20-35秒のランダム間隔（頻度を落とした）
+      setTimeout(() => {
+        // Apply filter only to main content, not footer
+        const pages = document.querySelectorAll('.page');
+        pages.forEach(page => {
+          page.style.filter = 'brightness(1.4) contrast(0.9)';
+          page.style.transition = 'filter 0.15s ease-in';
+        });
+
+        setTimeout(() => {
+          pages.forEach(page => {
+            page.style.transition = 'filter 0.5s ease-out';
+            page.style.filter = 'brightness(1) contrast(1)';
+          });
+        }, 1500); // 1.5秒間明るい状態を保持
+
+        triggerRandomFlicker();
+      }, delay);
+    }
+
+    triggerRandomFlicker();
+
+    // Spotlight
+    const spotlight = document.getElementById('spotlight');
+    document.addEventListener('mousemove', (e) => {
+      spotlight.style.left = (e.clientX - 250) + 'px';
+      spotlight.style.top = (e.clientY - 250) + 'px';
+    });
+
+    // Collapse Particles Animation (HOME page only)
+    const particlesContainer = document.getElementById('particlesContainer');
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let isHomePageActive = true;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function createParticlesAtCursor() {
+      if (!isHomePageActive) return;
+
+      for (let i = 0; i < 2; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        const offsetX = (Math.random() - 0.5) * 150;
+        const offsetY = (Math.random() - 0.5) * 150;
+        particle.style.left = (mouseX + offsetX) + 'px';
+        particle.style.top = (mouseY + offsetY) + 'px';
+        particle.style.width = (Math.random() * 4 + 2) + 'px';
+        particle.style.height = particle.style.width;
+        particle.style.opacity = Math.random() * 0.7 + 0.3;
+        particle.style.boxShadow = `0 0 ${Math.random() * 12 + 6}px rgba(127, 119, 221, ${Math.random() * 0.6 + 0.2})`;
+        particlesContainer.appendChild(particle);
+
+        setTimeout(() => particle.remove(), 3000);
+      }
+    }
+
+    // Generate particles on mouse movement (HOME only)
+    let lastParticleTime = 0;
+    document.addEventListener('mousemove', () => {
+      const now = Date.now();
+      if (now - lastParticleTime > 50) {
+        createParticlesAtCursor();
+        lastParticleTime = now;
+      }
+    });
+
+    // Navigation
+    function switchNav(btn, pageName) {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      switchPage(pageName);
+    }
+
+    function switchPage(pageName) {
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.getElementById(pageName).classList.add('active');
+
+      const navBtns = document.querySelectorAll('.nav-btn');
+      const pages = ['home', 'profile', 'works', 'request'];
+      pages.forEach((page, idx) => {
+        if (page === pageName) navBtns[idx].classList.add('active');
+        else navBtns[idx].classList.remove('active');
+      });
+
+      // Update particle effect state - only on HOME page
+      isHomePageActive = (pageName === 'home');
+
+      window.scrollTo(0, 0);
+    }
+
+    function switchTab(btn, tabName) {
+      const container = btn.closest('.section-tabs').parentElement;
+      container.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+      const tabElement = container.querySelector(`#${tabName}`);
+      tabElement.classList.add('active');
+      btn.classList.add('active');
+
+      // Auto-load videos if this tab has a playlist ID
+      if (tabElement && tabElement.dataset.playlistId) {
+        const playlistId = tabElement.dataset.playlistId;
+        const videoContainerId = `videos-${tabName}`;
+        const videoContainer = document.getElementById(videoContainerId);
+
+        // Check if videos haven't been loaded yet (container still has loading message)
+        if (videoContainer && videoContainer.children.length === 1 &&
+            videoContainer.children[0].textContent.includes('読み込み中')) {
+          loadPlaylistVideos(playlistId, videoContainerId);
+        }
+      }
+    }
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      alert('お問い合わせありがとうございます！確認後、ご連絡させていただきます。');
+      e.target.reset();
+    }
+
+    // Set default date to today (JST)
+    const deadlineInput = document.querySelector('input[name="deadline"]');
+    if (deadlineInput) {
+      const today = new Date();
+      const jstDate = new Date(today.getTime() + (9 * 60 * 60 * 1000)); // JST offset
+      const dateStr = jstDate.toISOString().split('T')[0];
+      deadlineInput.value = dateStr;
+    }
+
+    // Expression Display Hover Interaction (hidden areas)
+    document.querySelectorAll('#expressionFrame > div[data-expression]').forEach(area => {
+      area.addEventListener('mouseenter', function() {
+        const imageUrl = this.getAttribute('data-expression');
+        const expressionDisplay = document.getElementById('expressionDisplay');
+        if (expressionDisplay) {
+          expressionDisplay.src = imageUrl;
+        }
+      });
+    });
+
+    // YouTube API - Get Playlist Thumbnails
+    const YOUTUBE_API_KEY = 'AIzaSyBoCvsu_8M2hA_6htsUrlCMY1_UBQrRZy4';
+
+    const playlists = {
+      'cover': 'PLmDG2bhYs8qOTySTb8qXaXERPAv4IRkgw',
+      'shorts': 'PLmDG2bhYs8qOmwyYPyfca1Hajx3zhlVMH',
+      'singing': 'PLmDG2bhYs8qOoEYGrrW_KkExcJVEyJDaE',
+      'gaming': 'PLmDG2bhYs8qMxfFuFfulUuQ6HvcDXaLHr',
+      'showcase': 'PLmDG2bhYs8qMLoSTmj_H7BjBYClna0Fsw',
+      'full': 'PLmDG2bhYs8qPaXibiV58ZItuwgGqWPHcV',
+      'short': 'PLmDG2bhYs8qN7lh7TZXvoom6wztXNMcGl'
+    };
+
+    async function getPlaylistThumbnail(playlistId) {
+      try {
+        const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=1&key=${YOUTUBE_API_KEY}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.items && data.items.length > 0) {
+          return data.items[0].snippet.thumbnails.high.url;
+        }
+      } catch (error) {
+        console.error('Error fetching thumbnail:', error);
+      }
+      return null;
+    }
+
+    // Get all videos from playlist
+    async function getPlaylistVideos(playlistId) {
+      const videos = [];
+      let pageToken = '';
+
+      while (pageToken !== null) {
+        try {
+          const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=50&pageToken=${pageToken}&key=${YOUTUBE_API_KEY}`;
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.items) {
+            data.items.forEach(item => {
+              videos.push({
+                id: item.snippet.resourceId.videoId,
+                title: item.snippet.title,
+                thumbnail: item.snippet.thumbnails.medium.url
+              });
+            });
+          }
+
+          pageToken = data.nextPageToken || null;
+        } catch (error) {
+          console.error('Error fetching videos:', error);
+          break;
+        }
+      }
+
+      return videos;
+    }
+
+    // Display videos in grid
+    function displayVideos(videos, containerId) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      videos.forEach(video => {
+        const videoCard = document.createElement('a');
+        videoCard.href = `https://www.youtube.com/watch?v=${video.id}`;
+        videoCard.target = '_blank';
+        videoCard.style.cssText = `
+          display: flex;
+          flex-direction: column;
+          text-decoration: none;
+          color: inherit;
+          border: 1.5px solid var(--border2);
+          border-radius: 2px;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          background: rgba(10, 10, 18, 0.7);
+          cursor: pointer;
+        `;
+
+        videoCard.onmouseover = function() {
+          this.style.borderColor = 'var(--accent)';
+          this.style.background = 'rgba(127, 119, 221, 0.15)';
+          this.style.transform = 'translateY(-4px)';
+        };
+
+        videoCard.onmouseout = function() {
+          this.style.borderColor = 'var(--border2)';
+          this.style.background = 'rgba(10, 10, 18, 0.7)';
+          this.style.transform = 'none';
+        };
+
+        videoCard.innerHTML = `
+          <div style="width: 100%; aspect-ratio: 16/9; overflow: hidden;">
+            <img src="${video.thumbnail}" alt="${video.title}" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+              ${video.title}
+            </div>
+          </div>
+        `;
+
+        container.appendChild(videoCard);
+      });
+    }
+
+    // Load videos on tab switch
+    function switchTabWithVideos(btn, tabName) {
+      switchTab(btn, tabName);
+
+      const tabElement = document.getElementById(tabName);
+      if (tabElement && tabElement.dataset.playlistId) {
+        const playlistId = tabElement.dataset.playlistId;
+        const videoContainerId = `videos-${tabName}`;
+
+        // Check if videos already loaded
+        const container = document.getElementById(videoContainerId);
+        if (container && container.children.length > 0 && container.children[0].style.color === 'var(--text-muted)') {
+          loadPlaylistVideos(playlistId, videoContainerId);
+        }
+      }
+    }
+
+    async function loadPlaylistVideos(playlistId, containerId) {
+      const videos = await getPlaylistVideos(playlistId);
+      displayVideos(videos, containerId);
+    }
+
+    // Calculate Radar Chart Polygon based on scores
+    function calculateRadarPoints() {
+      const scores = [92, 78, 86, 81, 18]; // 粒状感, 流動性, 距離感, 不規則性, 透明感
+      const maxRadius = 150;
+      const centerX = 240;
+      const centerY = 240;
+
+      // 5角形の方向（ラジアン）
+      const angles = [
+        -Math.PI / 2,           // 上（粒状感）
+        -Math.PI / 2 + (2 * Math.PI / 5),  // 右上（流動性）
+        -Math.PI / 2 + (4 * Math.PI / 5),  // 右下（距離感）
+        -Math.PI / 2 + (6 * Math.PI / 5),  // 左下（不規則性）
+        -Math.PI / 2 + (8 * Math.PI / 5)   // 左上（透明感）
+      ];
+
+      const points = scores.map((score, index) => {
+        const radius = (score / 100) * maxRadius;
+        const x = centerX + radius * Math.cos(angles[index]);
+        const y = centerY + radius * Math.sin(angles[index]);
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(' ');
+
+      const polygon = document.getElementById('radarPolygon');
+      if (polygon) {
+        polygon.setAttribute('points', points);
+      }
+    }
+
+    // Load all playlists on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Calculate radar chart based on scores
+      calculateRadarPoints();
+      // ARCHIVES playlists
+      const archivesPlaylists = [
+        { id: 'videos-cover', playlistId: 'PLmDG2bhYs8qOTySTb8qXaXERPAv4IRkgw' },
+        { id: 'videos-shorts', playlistId: 'PLmDG2bhYs8qOmwyYPyfca1Hajx3zhlVMH' },
+        { id: 'videos-singing', playlistId: 'PLmDG2bhYs8qOoEYGrrW_KkExcJVEyJDaE' },
+        { id: 'videos-gaming', playlistId: 'PLmDG2bhYs8qMxfFuFfulUuQ6HvcDXaLHr' }
+      ];
+
+      // WORKS playlists
+      const worksPlaylists = [
+        { id: 'videos-showcase', playlistId: 'PLmDG2bhYs8qMLoSTmj_H7BjBYClna0Fsw' },
+        { id: 'videos-full', playlistId: 'PLmDG2bhYs8qPaXibiV58ZItuwgGqWPHcV' },
+        { id: 'videos-shorts-works', playlistId: 'PLmDG2bhYs8qN7lh7TZXvoom6wztXNMcGl' }
+      ];
+
+      const allPlaylists = [...archivesPlaylists, ...worksPlaylists];
+
+      // Load all playlists
+      for (const playlist of allPlaylists) {
+        const videos = await getPlaylistVideos(playlist.playlistId);
+        displayVideos(videos, playlist.id);
+      }
+    });
+
+  </script>
+</body>
+</html>
