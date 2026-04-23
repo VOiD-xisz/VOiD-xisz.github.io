@@ -851,12 +851,13 @@
       nav { padding: 0 2rem; height: 56px; }
       .content-wrap { padding: 4rem 2rem 5rem; }
       .home-text-main { font-size: 40px; }
-      .profile-header { display: flex !important; flex-direction: column !important; gap: 2rem !important; }
-      .profile-frame { order: 1; max-width: 100%; width: 100%; }
+      .profile-header { display: flex !important; flex-direction: column !important; gap: 2rem !important; align-items: center !important; }
+      .profile-frame { order: 1; max-width: 100%; width: 100%; margin: 0 auto; }
       .profile-frame ~ div { order: 2; }
       .profile-hero { grid-template-columns: 1fr; gap: 2rem; }
-      .profile-images { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
-      .profile-expressions { grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+      .profile-images { grid-template-columns: 1fr !important; gap: 1.5rem !important; justify-items: center; }
+      .profile-hero-left { margin: 0 auto; }
+      .profile-expressions { grid-template-columns: repeat(3, 1fr); gap: 0.8rem; justify-content: center; }
       .expression-variant { width: 100%; max-width: 100px; }
       .voice-section, .archives-section, .form-section { padding: 2.5rem; }
       .radar-chart { height: 300px; }
