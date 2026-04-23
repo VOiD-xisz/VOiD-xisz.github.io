@@ -851,17 +851,28 @@
       nav { padding: 0 2rem; height: 56px; }
       .content-wrap { padding: 4rem 2rem 5rem; }
       .home-text-main { font-size: 40px; }
-      .profile-hero { grid-template-columns: 1fr; gap: 3rem; }
+      .profile-hero { grid-template-columns: 1fr; gap: 2rem; }
+      .profile-images { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+      .profile-frame { max-width: 100%; width: 100%; }
+      .profile-expressions { grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+      .expression-variant { width: 100%; max-width: 100px; }
       .voice-section, .archives-section, .form-section { padding: 2.5rem; }
+      .radar-chart { height: 300px; }
       footer { height: 64px; gap: 2rem; }
       .social-link { width: 44px; height: 44px; font-size: 18px; }
     }
 
     @media (max-width: 480px) {
       .home-text-main { font-size: 32px; }
-      .profile-name { font-size: 32px; }
+      .profile-name { font-size: 28px; }
+      .profile-hero { grid-template-columns: 1fr; gap: 1.5rem; }
+      .profile-frame { max-width: 100%; width: 100%; height: auto; }
+      .profile-expressions { grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+      .expression-variant { width: 100%; max-width: 80px; }
       .cta-buttons { gap: 1.5rem; }
-      .cta-btn { padding: 14px 32px; }
+      .cta-btn { padding: 14px 32px; font-size: 14px; }
+      .radar-chart { height: 250px; }
+      iframe { height: 1500px !important; }
     }
   </style>
 </head>
@@ -990,7 +1001,7 @@
       </div>
 
       <!-- Profile Visual & Expression Layout -->
-      <div style="display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 2rem; align-items: start; margin-bottom: 6rem;">
+      <div class="profile-images" style="display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 2rem; align-items: start; margin-bottom: 6rem;">
         <!-- Left: Full Body Image (Fixed) -->
         <div class="profile-hero-left">
           <div class="profile-main-image" id="fullBodyFrame">
