@@ -851,10 +851,12 @@
       nav { padding: 0 2rem; height: 56px; }
       .content-wrap { padding: 4rem 2rem 5rem; }
       .home-text-main { font-size: 40px; }
-      .profile-header { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+      .profile-header { display: flex !important; flex-direction: column !important; gap: 2rem !important; }
+      .profile-frame { order: 2; max-width: 100%; width: 100%; }
+      .profile-frame ~ div { order: 3; }
+      .profile-name { order: 1; }
       .profile-hero { grid-template-columns: 1fr; gap: 2rem; }
       .profile-images { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
-      .profile-frame { max-width: 100%; width: 100%; }
       .profile-expressions { grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
       .expression-variant { width: 100%; max-width: 100px; }
       .voice-section, .archives-section, .form-section { padding: 2.5rem; }
