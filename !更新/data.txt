@@ -1,0 +1,20 @@
+# SCHEDULE
+# 日付 | イベント名 | アイコン画像ファイル名
+2026-06-15 | イベント名1 | icon_calendar.png
+2026-06-20 | イベント名2 | icon_music.png
+2026-07-01 | イベント名3 | icon_star.png
+
+# COMMISSION_SAMPLES
+# 動画ID | タイトル | 役割
+HWTyHo3R9jk | １ / 來世 (Cover) | ボーカル・ボーカルMIX・マスタリング
+4IAJwfgrSCw | ２ / 來世 (Cover) | ボーカル・ボーカルMIX・マスタリング
+xO4rV4USn4A | ３ / 來世 (Cover) | ボーカル・ボーカルMIX・マスタリング
+cd-GxkaNHxM | ４ / 來世 (Cover) | ボーカル・ボーカルMIX・マスタリング
+P0Kck3WPenU | ５ / 來世 (Cover) | ボーカル・ボーカルMIX・マスタリング
+tNO-s5yIKXM | ６ / 世ノ世 (Cover) | ボーカルMIX・マスタリング
+
+# SYSTEM_LOG
+# [日時] ログメッセージ
+[2026-06-08 15:30] スケジュール更新しました
+[2026-06-08 14:00] グラデーション背景を追加
+[2026-06-08 10:30] COMMISSION ページを調整
