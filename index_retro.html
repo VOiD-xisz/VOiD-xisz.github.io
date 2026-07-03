@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>來世 / LiESE</title>
+<meta name="description" content="來世 / LiESE — Vtuber活動 と 歌ってみたMIX依頼。">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent:#5a4fd7; --accent-t:#a99ffb; --accent-soft:rgba(90,79,215,.16); --accent-line:rgba(90,79,215,.4);
+  --bg:#0a0a10; --win:#17171f; --box:#22222e;
+  --line:rgba(255,255,255,.14); --line-soft:rgba(255,255,255,.08);
+  --text:#f1f1f6; --dim:#c7c7d3; --mute:#9a9ab0;
+  --mono:'IBM Plex Mono',monospace;
+  --font:'Zen Kaku Gothic New','Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+  --tb:0px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:var(--font); color:var(--text); background:var(--bg);
+  overflow:hidden; -webkit-font-smoothing:antialiased; letter-spacing:.02em;
+}
+
+/* ============ デスクトップ ============ */
+.desktop{
+  position:fixed; inset:0; bottom:var(--tb);
+  background:
+    linear-gradient(rgba(8,8,13,.42), rgba(8,8,13,.58)),
+    url('kari.png') center/cover no-repeat;
+  overflow:hidden;
+}
+.watermark{position:absolute; right:26px; bottom:40px; text-align:right; pointer-events:none; user-select:none}
+.watermark .jp{font-size:78px; line-height:1; color:rgba(255,255,255,.045); letter-spacing:.1em}
+.watermark .en{font-family:var(--mono); font-size:11px; letter-spacing:.5em; color:rgba(255,255,255,.06); margin-top:8px}
+.credit-mark{position:absolute; right:24px; bottom:12px; z-index:6; white-space:nowrap; font-family:var(--mono); font-size:10px; letter-spacing:.06em; color:rgba(255,255,255,.26); text-decoration:none; user-select:none}
+.credit-mark:hover{color:rgba(255,255,255,.55)}
+
+/* 左：SNSショートカット */
+.shortcuts{position:absolute; top:21%; left:24%; display:grid; grid-template-columns:repeat(3,74px); gap:22px 20px}
+.sc{display:flex; flex-direction:column; align-items:center; gap:7px; width:74px; cursor:pointer; text-decoration:none; color:var(--dim)}
+.sc .tile{width:52px; height:52px; border-radius:12px; background:var(--box); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; transition:border-color .15s, transform .15s, background .15s}
+.sc .tile img{width:26px; height:26px; object-fit:contain}
+.sc .tile .mono-mk{font-family:var(--mono); font-size:12px; color:var(--dim)}
+.sc .lbl{font-family:var(--mono); font-size:10px; letter-spacing:.1em; color:var(--mute)}
+.sc:hover .tile{border-color:var(--accent-line); transform:translateY(-2px); background:#262633}
+.sc:hover .lbl{color:var(--text)}
+
+/* ============ タスクバー ============ */
+.taskbar{position:fixed; left:0; right:0; bottom:0; height:var(--tb); z-index:9000;
+  display:flex; align-items:center; gap:14px; padding:0 14px;
+  background:linear-gradient(180deg,#16161e,#101017); border-top:1px solid var(--line)}
+.tb-brand{font-family:var(--mono); font-size:12px; letter-spacing:.14em; color:var(--dim); white-space:nowrap}
+.tb-brand b{color:var(--text); font-weight:500}
+.tb-apps{display:flex; gap:8px}
+.tb-btn{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim);
+  background:transparent; border:1px solid var(--line); border-radius:8px; padding:7px 15px; cursor:pointer; transition:all .15s}
+.tb-btn:hover{color:var(--text); border-color:var(--accent-line)}
+.tb-btn.active{color:#fff; background:var(--accent-soft); border-color:var(--accent-line)}
+.tb-clock{margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--mute); text-align:right; line-height:1.35}
+.tb-clock .t{color:var(--text); letter-spacing:.06em}
+
+/* ============ ウィンドウ ============ */
+.win{position:fixed; inset:0; display:none; flex-direction:column; z-index:20; overflow:hidden;
+  animation:startin .5s ease both}
+.win::before{content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:radial-gradient(ellipse 62% 76% at 50% 50%, rgba(5,5,9,.93) 0%, rgba(5,5,9,.9) 42%, rgba(5,5,9,.62) 68%, rgba(5,5,9,.18) 86%, transparent 100%)}
+.win.open{display:flex}
+.winbar{position:absolute; top:14px; right:18px; z-index:6; display:flex; padding:0; border:none}
+.winbar.grabbing{cursor:grabbing}
+.winbar .dots{display:flex; gap:6px}
+.winbar .dots i{width:11px;height:11px;border-radius:50%;background:#3a3a48}
+.winbar .dots i:first-child{background:var(--accent)}
+.winbar .name{font-family:var(--mono); font-size:.8rem; letter-spacing:.08em; color:#c9c9d6}
+.winbar .x{margin-left:auto; width:24px; height:24px; border-radius:7px; border:1px solid var(--line);
+  color:var(--dim); display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:.85rem; cursor:pointer; background:transparent}
+.winbar .x:hover{color:#fff; border-color:var(--accent-line); background:rgba(255,255,255,.05)}
+
+.winbody{flex:1; width:100%; max-width:960px; margin:0 auto; display:grid; grid-template-columns:190px 1fr; min-height:0}
+.side{border-right:1px solid var(--line); padding:16px 12px; overflow-y:auto; scrollbar-width:none}
+.side::-webkit-scrollbar{display:none}
+.side .cat{font-family:var(--mono);font-size:.62rem;letter-spacing:.2em;color:var(--mute);padding:0 10px 10px;text-transform:uppercase}
+.side a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--dim);
+  font-size:.9rem;font-weight:500;margin-bottom:2px;cursor:pointer;transition:background .15s,color .15s}
+.side a .mk{width:7px;height:7px;border-radius:2px;background:#3a3a4a;flex-shrink:0;transition:background .15s}
+.side a:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.side a.active{background:var(--accent-soft);color:#fff}
+.side a.active .mk{background:var(--accent)}
+
+.content{overflow-y:auto; padding:24px 30px 40px; min-width:0}
+.content::-webkit-scrollbar{width:9px}
+.content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:6px}
+
+section{scroll-margin-top:8px; margin-bottom:34px}
+.head{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.head .dia{width:11px;height:11px;background:var(--accent);transform:rotate(45deg);flex-shrink:0;border-radius:2px}
+.head h2{font-size:1.24rem;font-weight:700;letter-spacing:.05em;color:#f4f4f8}
+.head .en{margin-left:auto;font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;color:var(--mute);text-transform:uppercase}
+
+.box{background:var(--box);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.subttl{font-weight:700;color:#f2f2f7;letter-spacing:.03em}
+.dim{color:var(--dim)} .note{color:var(--mute);font-size:.83rem;line-height:1.85}
+.lead{color:var(--dim);font-size:.92rem}
+.lbl{color:#fff;font-weight:700}
+a.link{color:var(--accent-t);text-decoration:none} a.link:hover{color:#c7bfff;text-decoration:underline}
+
+.status{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:.76rem;color:var(--dim);
+  border:1px solid var(--line);border-radius:8px;padding:8px 14px;margin-bottom:12px}
+.status i{width:8px;height:8px;background:#57c99a;display:inline-block;border-radius:2px}
+.status b{color:var(--text);font-weight:500}
+
+ul.li{list-style:none} ul.li li{position:relative;padding-left:16px;color:var(--dim);font-size:.9rem;margin:5px 0}
+ul.li li::before{content:"";position:absolute;left:0;top:.72em;width:5px;height:5px;background:var(--accent);border-radius:1px}
+
+.crow+.crow{margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft)}
+.crow .h{display:flex;align-items:center;gap:9px;font-weight:700;color:#eef0f5;font-size:.92rem;margin-bottom:6px}
+.crow .h .sym{height:18px;width:18px;object-fit:contain}
+.crow .h .wm{height:20px;width:auto}
+.crow p{font-size:.9rem;color:var(--text)}
+.reqlabel{font-weight:700;color:#eef0f5;letter-spacing:.06em;font-size:.9rem;margin-bottom:4px}
+
+details.acc{background:var(--box);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+details.acc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 18px;font-weight:700;letter-spacing:.03em;color:#eeeef4}
+details.acc>summary::-webkit-details-marker{display:none}
+details.acc>summary:hover{background:rgba(255,255,255,.03)}
+details.acc>summary .tri::before{content:"\25B6";color:var(--accent-t);font-size:.7rem}
+details.acc[open]>summary .tri::before{content:"\25BC"}
+details.acc>summary .pill{margin-left:auto;font-size:.8rem;color:#eceaf7;background:rgba(90,79,215,.22);border:1px solid var(--accent-line);border-radius:999px;padding:2px 12px;font-weight:600}
+details.acc[open]>summary .pill{display:none}
+.acc-in{padding:6px 18px 18px;border-top:1px solid var(--line)}
+
+.prow{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:.92rem}
+.prow:last-child{border-bottom:none}
+.prow .k{color:var(--dim)} .prow .v{color:#fff;font-weight:700;white-space:nowrap}
+.tag{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;color:var(--dim);border:1px solid var(--line);border-radius:8px;padding:4px 12px}
+
+.tmpl{position:relative;background:#0e0e15;border:1px solid var(--line);border-radius:10px}
+.tmpl pre{font-family:var(--font);white-space:pre-wrap;word-break:break-word;padding:16px;font-size:.86rem;line-height:1.9;color:var(--text);max-height:170px;overflow:auto}
+.tmpl pre::-webkit-scrollbar{width:8px}
+.tmpl pre::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:6px}
+.copy{position:absolute;top:8px;right:8px;z-index:2;display:inline-flex;align-items:center;gap:6px;
+  background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 11px;
+  font-family:var(--mono);font-weight:600;font-size:.72rem;letter-spacing:.08em;cursor:pointer;transition:background .15s}
+.copy:hover{background:#6b60e6} .copy.done{background:#48c58f}
+
+.step{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:2px 0 20px;position:relative}
+.step:not(:last-child)::before{content:"";position:absolute;left:21px;top:32px;bottom:-2px;width:2px;background:var(--line)}
+.step .n{font-family:var(--mono);font-size:1.05rem;font-weight:700;line-height:1.7;color:var(--accent-t)}
+.step h3{font-size:1.02rem;font-weight:700;line-height:1.7;margin:0 0 6px;color:#eeeef4}
+.step p,.step li{color:var(--dim);font-size:.9rem}
+.hi{background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:10px;padding:16px 18px;margin-top:14px}
+.hi .t{font-weight:700;color:#f2f2f7;margin-bottom:6px}
+.credit{font-family:var(--mono);font-size:.86rem;color:#fff;margin-top:8px}
+
+.pf-row{display:flex;gap:16px;padding:11px 0;border-bottom:1px solid var(--line-soft);font-size:.92rem}
+.pf-row:last-child{border-bottom:none}
+.pf-row .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;color:var(--accent-t);text-transform:uppercase;min-width:96px;flex-shrink:0;padding-top:2px}
+.pf-row .v{color:var(--text)}
+.pf-colors{display:flex;gap:14px;margin-top:4px}
+.pf-sw{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pf-sw .c{width:52px;height:52px;border-radius:9px;border:1px solid var(--line)}
+.pf-sw span{font-family:var(--mono);font-size:.68rem;color:var(--mute)}
+.pf-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.pf-links a{display:inline-flex;align-items:center;gap:7px;font-size:.82rem;color:var(--dim);
+  border:1px solid var(--line);border-radius:8px;padding:7px 12px;text-decoration:none;transition:all .15s}
+.pf-links a:hover{color:#fff;border-color:var(--accent-line);background:var(--accent-soft)}
+.pf-links a img{height:15px;width:15px;object-fit:contain}
+
+.pf-layout{display:grid;grid-template-columns:minmax(0,430px) 1fr;gap:30px;align-items:start}
+.pf-text{max-width:430px}
+.pf-layout .pf-text>section:last-child{margin-bottom:0}
+.pf-image{position:sticky;top:0}
+.pf-image img{width:100%;height:auto;display:block}
+@media(max-width:760px){.pf-layout{grid-template-columns:1fr;gap:22px}.pf-image{position:static;max-width:300px;margin:0 auto}}
+
+/* ===== Schedule（PROFILE内カレンダー） ===== */
+.sch-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sch-nav .m{font-family:var(--mono);font-size:.8rem;letter-spacing:.08em;color:var(--text);font-weight:600}
+.sch-nav button{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer;font-size:.85rem;font-family:inherit}
+.sch-nav button:hover{color:#fff;border-color:var(--accent-line);background:var(--accent-soft)}
+.sch-wd{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;color:var(--mute);margin-bottom:6px}
+.sch-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.sch-day{min-height:44px;border-radius:8px;background:var(--box);border:1px solid var(--line-soft);padding:4px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.sch-day.other{opacity:.28}
+.sch-day.today{border-color:var(--accent-line);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.sch-day .n{font-family:var(--mono);font-size:.62rem;color:var(--mute)}
+.sch-day.today .n{color:var(--accent-t)}
+.sch-day img{width:16px;height:16px;object-fit:contain}
+.sch-upcoming{margin-top:16px;border-top:1px solid var(--line-soft);padding-top:14px}
+.sch-item{display:flex;align-items:center;gap:10px;padding:6px 0}
+.sch-item .date{font-family:var(--mono);font-size:.68rem;color:var(--accent-t);min-width:44px;flex-shrink:0;line-height:1.5}
+.sch-item img{width:18px;height:18px;object-fit:contain;flex-shrink:0}
+.sch-item .t{font-size:.86rem;color:var(--text)}
+.sch-empty{color:var(--mute);font-size:.82rem;padding:6px 0}
+
+.soon{padding:40px 20px;text-align:center;border:1px dashed var(--line);border-radius:10px;color:var(--dim)}
+.soon .b{font-weight:700;letter-spacing:.12em;color:var(--text)}
+
+@media(max-width:760px){
+  .launch{position:static!important;display:block;margin:10px auto}
+
+  :root{--tb:0px}
+  .shortcuts{position:absolute;top:12px;left:12px;right:auto;display:grid;grid-template-columns:repeat(3,56px);gap:12px}
+  .sc{width:60px}
+  .watermark{display:none}
+  .win{inset:0!important}
+  .winbody{grid-template-columns:1fr}
+  .side{display:none}
+  .content{padding:20px 18px 30px}
+  .tb-brand{display:none}
+}
+
+    /* ===== ランチャー & 落書き ===== */
+    .lgroup{position:absolute; z-index:5}
+    .lgroup .launch{position:static}
+    .launch{position:absolute; z-index:5; background:none; border:none; cursor:pointer; font-family:inherit; padding:0}
+    .launch .box2{display:block; min-width:158px; padding:15px 22px; border-radius:14px;
+      background:rgba(21,21,30,.82); border:1px solid var(--accent-line);
+      box-shadow:0 22px 55px -22px rgba(0,0,0,.85); backdrop-filter:blur(5px); text-align:center;
+      transition:transform .16s, border-color .16s, background .16s}
+    .launch:hover .box2{transform:translateY(-3px); border-color:var(--accent-t); background:rgba(32,32,45,.92)}
+    .launch .t{font-family:var(--mono); font-size:.82rem; letter-spacing:.22em; color:#fff; text-transform:uppercase}
+    .launch .s{display:block; font-size:.72rem; color:var(--dim); margin-top:5px; letter-spacing:.04em}
+    .launch.accent .box2{border-color:var(--accent); background:rgba(90,79,215,.20)}
+    .launch.accent:hover .box2{background:rgba(90,79,215,.30)}
+    .launch.big .box2{min-width:230px; padding:26px 34px; border-radius:16px}
+    .launch.big .t{font-size:1.05rem; letter-spacing:.24em}
+    .launch.big .s{font-size:.82rem; margin-top:8px}
+  
+    /* ===== スタート画面（ゴシック / 醒めない悪夢） ===== */
+    @font-face{font-family:'Hakkou Mincho';src:url('HakkouMincho.ttf') format('truetype');font-display:swap}
+    @font-face{font-family:'Shinsyoku Mincho';src:url('ShinsyokuMincho-Regular.ttf') format('truetype');font-display:swap}
+    .start{position:absolute; inset:0; z-index:4; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:30px; padding:52px 24px; overflow:auto;
+      animation:startin 1.3s ease both}
+    .start::before{content:""; position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(120% 92% at 50% 42%, transparent 40%, rgba(4,4,8,.64) 100%)}
+    @keyframes startin{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+    .start > *{position:relative; z-index:1}
+    .start-brand{text-align:center}
+    .start-logo{display:block; width:min(140px,42vw); height:auto; margin:2px auto 0; opacity:.85;
+      filter:drop-shadow(0 4px 16px rgba(0,0,0,.6))}
+    .start-brand .jp{font-family:'Hakkou Mincho', var(--font); font-weight:400;
+      font-size:clamp(3.4rem,9vw,5.8rem); letter-spacing:.24em; color:#f4f2f7; line-height:1;
+      text-indent:.24em; text-shadow:0 6px 34px rgba(0,0,0,.75)}
+    .start-brand .en{font-family:'Cormorant Garamond',serif; font-weight:500; font-size:1rem;
+      letter-spacing:.66em; color:rgba(226,222,236,.66); margin-top:14px; text-indent:.66em}
+    .start-tag{font-family:'Shinsyoku Mincho','Hakkou Mincho', var(--font); text-align:center;
+      font-size:clamp(.95rem,2.5vw,1.24rem); letter-spacing:.42em; text-indent:.42em;
+      color:rgba(228,222,240,.82); text-shadow:0 2px 18px rgba(0,0,0,.85)}
+    .start-orn{color:rgba(200,190,230,.5); letter-spacing:.9em; font-size:.8rem; text-indent:.9em}
+    .start-menu{display:flex; flex-direction:column; width:min(420px,88vw);
+      border-top:1px solid rgba(255,255,255,.15)}
+    .smenu{border:none; border-bottom:1px solid rgba(255,255,255,.15); background:none;
+      padding:19px 12px; cursor:pointer; text-align:center; color:#eceaf2; font-family:inherit;
+      transition:background .22s}
+    .smenu:hover{background:rgba(90,79,215,.13)}
+    .smenu .en{font-family:'Cormorant Garamond',serif; font-weight:500; font-size:1.72rem;
+      letter-spacing:.14em; display:block; color:#fbfafe; transition:color .2s, text-shadow .2s}
+    .smenu .jp{font-family:'Hakkou Mincho', var(--font); font-size:.86rem; letter-spacing:.2em;
+      color:var(--dim); margin-top:5px; display:block}
+    .smenu:hover .en{color:#cdc4ff; text-shadow:0 0 20px rgba(122,110,240,.55)}
+    .start-sns{display:flex; flex-direction:column; align-items:center; gap:12px; width:162px}
+    .sns-banner{width:100%; display:flex; align-items:center; justify-content:center;
+      padding:2px 0; transition:opacity .18s, transform .18s; opacity:.9}
+    .sns-banner:hover{opacity:1; transform:translateY(-2px)}
+    .sns-banner img{width:100%; height:auto; object-fit:contain}
+    .sns-brow{display:flex; gap:12px; width:100%; align-items:center}
+    .sns-brow .sns-banner{flex:1; min-width:0}
+    .sns-row{display:flex; gap:12px; justify-content:center}
+    .sns-icon{width:46px; height:46px; border-radius:50%; background:rgba(13,13,19,.66);
+      border:1px solid rgba(255,255,255,.16); display:flex; align-items:center; justify-content:center;
+      transition:border-color .18s, transform .18s, background .18s}
+    .sns-icon:hover{border-color:var(--accent-line); background:rgba(30,26,48,.8); transform:translateY(-2px)}
+    .sns-icon img{width:22px; height:22px; object-fit:contain}
+    .sns-icon .mono-mk{font-family:'Cormorant Garamond',serif; font-size:13px; letter-spacing:.05em; color:var(--dim)}
+  </style>
+</head>
+<body>
+
+<div class="desktop" id="desktop">
+  <a class="credit-mark" href="https://x.com/SHIGESHIGE1680" target="_blank" rel="noopener">illustration : SHIGERU @SHIGESHIGE1680</a>
+
+  <!-- スタート画面 -->
+  <div class="start">
+    <div class="start-brand">
+      <div class="jp">來世</div>
+    </div>
+    <div class="start-tag">醒めない悪夢で遭いましょう</div>
+    <div class="start-orn">&#10022;&nbsp;&#10022;&nbsp;&#10022;</div>
+    <div class="start-menu">
+      <button class="smenu" onclick="openWin('win-profile')">
+        <span class="en">Profile</span><span class="jp">僕について</span>
+      </button>
+      <button class="smenu" onclick="openWin('win-commission')">
+        <span class="en">Commission</span><span class="jp">MIX ご依頼</span>
+      </button>
+    </div>
+    <div class="start-sns">
+      <div class="sns-row">
+        <a class="sns-icon" href="https://x.com/xisz_" target="_blank" rel="noopener" title="X"><img src="icon/logo-white.png" alt="X"></a>
+        <a class="sns-icon" href="https://www.youtube.com/@xisz_/videos" target="_blank" rel="noopener" title="YouTube"><img src="icon/yt_icon_white_digital.png" alt="YouTube"></a>
+        <a class="sns-icon" href="https://xisz.booth.pm" target="_blank" rel="noopener" title="BOOTH"><img src="icon/BOOTH_icon.png" alt="BOOTH"></a>
+      </div>
+      <div class="sns-row">
+        <a class="sns-icon" href="https://marshmallow-qa.com/xisz_?t=tBM3si" target="_blank" rel="noopener" title="Marshmallow"><img src="icon/mash_icon.gif" alt="Marshmallow"></a>
+        <a class="sns-icon" href="https://setlink.jp/public/958f390f-830e-4786-9320-4e11790bdd8a" target="_blank" rel="noopener" title="SetList"><span class="mono-mk">SL</span></a>
+        <a class="sns-icon" href="https://wick-sns.com/sns/profile/5390f8ab-4103-4321-bd84-6c2fdb0473a7" target="_blank" rel="noopener" title="Wick"><img src="icon/Wick-logo-White-01.png" alt="Wick"></a>
+      </div>
+    </div>
+    <img class="start-logo" src="LiESE_Logo.png" alt="LiESE">
+  </div>
+
+  <!-- PROFILE -->
+  <section class="win" id="win-profile">
+    <div class="winbar">
+      <button class="x" onclick="closeWin('win-profile')" aria-label="閉じる">✕</button>
+    </div>
+    <div class="winbody" style="grid-template-columns:1fr">
+      <div class="content">
+        <div class="pf-layout">
+          <div class="pf-text">
+            <section>
+              <div class="head"><span class="dia"></span><h2>Profile</h2><span class="en">來世 / LiESE</span></div>
+              <div class="pf-row"><span class="k">Name</span><span class="v">來世 / LiESE</span></div>
+              <div class="pf-row"><span class="k">Birthday</span><span class="v">06 - 26</span></div>
+              <div class="pf-row"><span class="k">Height</span><span class="v">155</span></div>
+              <div class="pf-row"><span class="k">Likes</span><span class="v">ふわもちにゃんこ、杏仁豆腐</span></div>
+              <div class="pf-row"><span class="k">Activities</span><span class="v">歌う、ARG、怖い話読む</span></div>
+            </section>
+            <section>
+              <div class="head"><span class="dia"></span><h2>Color</h2><span class="en">Theme</span></div>
+              <div class="pf-colors">
+                <div class="pf-sw"><span class="c" style="background:#4d4398"></span><span>#4d4398</span></div>
+                <div class="pf-sw"><span class="c" style="background:#16172a"></span><span>#16172a</span></div>
+                <div class="pf-sw"><span class="c" style="background:#8a8a9e"></span><span>#8a8a9e</span></div>
+              </div>
+            </section>
+            <section>
+              <div class="head"><span class="dia"></span><h2>Schedule</h2><span class="en">予定</span></div>
+              <div class="sch-nav">
+                <button type="button" id="schPrev" aria-label="前の月">‹</button>
+                <div class="m" id="schMonthLabel"></div>
+                <button type="button" id="schNext" aria-label="次の月">›</button>
+              </div>
+              <div class="sch-wd"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div>
+              <div class="sch-grid" id="schGrid"></div>
+              <div class="sch-upcoming" id="schUpcoming"></div>
+            </section>
+            <section>
+              <div class="head"><span class="dia"></span><h2>Links</h2><span class="en">SNS</span></div>
+              <div class="pf-links">
+                <a href="https://x.com/xisz_" target="_blank" rel="noopener"><img src="icon/logo-white.png" alt="">X</a>
+                <a href="https://www.youtube.com/@xisz_/videos" target="_blank" rel="noopener"><img src="icon/yt_icon_white_digital.png" alt="">YouTube</a>
+                <a href="https://marshmallow-qa.com/xisz_?t=tBM3si" target="_blank" rel="noopener"><img src="icon/mash_icon.gif" alt="">Marshmallow</a>
+                <a href="https://setlink.jp/public/958f390f-830e-4786-9320-4e11790bdd8a" target="_blank" rel="noopener">SetLink</a>
+                <a href="https://wick-sns.com/sns/profile/5390f8ab-4103-4321-bd84-6c2fdb0473a7" target="_blank" rel="noopener"><img src="icon/Wick-logo-White-01.png" alt="">Wick</a>
+                <a href="https://xisz.booth.pm" target="_blank" rel="noopener">BOOTH</a>
+              </div>
+            </section>
+          </div>
+          <div class="pf-image">
+            <img src="zensin1.png" alt="來世 全身">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMISSION -->
+  <section class="win" id="win-commission">
+    <div class="winbar">
+      <button class="x" onclick="closeWin('win-commission')" aria-label="閉じる">✕</button>
+    </div>
+    <div class="winbody">
+      <aside class="side">
+        <div class="cat">Menu</div>
+        <a data-go="c-top"><span class="mk"></span>Top</a>
+        <a data-go="c-contact"><span class="mk"></span>Contact</a>
+        <a data-go="c-portfolio"><span class="mk"></span>Portfolio</a>
+        <a data-go="c-price"><span class="mk"></span>Price</a>
+        <a data-go="c-template"><span class="mk"></span>Template</a>
+        <a data-go="c-flow"><span class="mk"></span>Flow</a>
+        <a data-go="c-privacy"><span class="mk"></span>Privacy</a>
+      </aside>
+      <div class="content" id="cmContent">
+
+        <section id="c-top">
+          <div class="head"><span class="dia"></span><h2>歌ってみた MIX 依頼</h2><span class="en">Top</span></div>
+          <div class="status"><i></i>受付状況　<b>7月納品～</b></div>
+          <p class="note">まずは Contact（X の DM）よりお気軽にご相談ください。</p>
+        </section>
+
+        <section id="c-contact">
+          <div class="head"><span class="dia"></span><h2>Contact</h2><span class="en">お問い合わせ</span></div>
+          <div class="box">
+            <div class="crow">
+              <div class="h"><img class="sym" src="icon/logo-white.png" alt="X">X（旧Twitter）</div>
+              <p>來世 <a class="link" href="https://x.com/xisz_" target="_blank" rel="noopener">@xisz_</a> のDMまでお願いいたします。</p>
+              <ul class="li" style="margin-top:6px;"><li>スパム扱いやXの不具合により、すぐに気付けない場合があります。</li><li>2日以上返信がない場合はお手数ですが、リプライか下記メールアドレスにてお知らせいただけますと幸いです。</li></ul>
+              <p class="note" style="margin-top:4px;">Mail：xiszex@gmail.com</p>
+            </div>
+            <div class="crow">
+              <div class="h"><img class="wm" src="icon/tsunagu-logo.png" alt="つなぐ"></div>
+              <p>通常依頼：<a class="link" href="https://tsunagu.cloud/products/101870" target="_blank" rel="noopener">tsunagu.cloud/products/101870</a></p>
+              <p style="margin-top:6px;">期間限定／お試し500円：<a class="link" href="https://tsunagu.cloud/products/104934" target="_blank" rel="noopener">tsunagu.cloud/products/104934</a></p>
+              <p class="note" style="margin-top:4px;">Wickポイントでの購入も歓迎です。</p>
+            </div>
+            <div class="crow">
+              <div class="h"><img class="sym" src="icon/Discord-Symbol-White.png" alt="Discord">Discord</div>
+              <p>來世のアカウントをご存知の方は、DiscordのDMからでも問題ありません。</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="c-portfolio">
+          <div class="head"><span class="dia"></span><h2>Portfolio</h2><span class="en">実績</span></div>
+          <div class="soon"><div class="b">準備中</div><p style="margin-top:8px;">MIX実績を掲載予定です。</p></div>
+        </section>
+
+        <section id="c-price">
+          <div class="head"><span class="dia"></span><h2>Price</h2><span class="en">料金</span></div>
+          <div class="box" style="margin-bottom:14px;">
+            <div class="subttl">歌ってみたMIX</div>
+            <p class="note" style="margin:8px 0 4px;">内容</p>
+            <ul class="li">
+              <li>エディット（ピッチ・タイミング修正）</li>
+              <li>ミキシング</li>
+              <li>エフェクト加工</li>
+              <li>マスタリング</li>
+            </ul>
+          </div>
+          <details class="acc">
+            <summary><span class="tri"></span>フルコーラス<span class="pill">基本 5,000円〜</span></summary>
+            <div class="acc-in">
+              <div class="prow"><span class="k">基本料金</span><span class="v">5,000円</span></div>
+              <div class="prow"><span class="k">ハモリ生成</span><span class="v">＋2,000円</span></div>
+              <div class="prow"><span class="k">ボーカル追加</span><span class="v">＋2,000円 / 名</span></div>
+              <span class="tag">納期　7日</span>
+            </div>
+          </details>
+          <details class="acc">
+            <summary><span class="tri"></span>ワンコーラス<span class="pill">基本 3,000円〜</span></summary>
+            <div class="acc-in">
+              <div class="prow"><span class="k">基本料金</span><span class="v">3,000円</span></div>
+              <div class="prow"><span class="k">ハモリ生成</span><span class="v">＋1,000円</span></div>
+              <div class="prow"><span class="k">ボーカル追加</span><span class="v">＋1,500円 / 名</span></div>
+              <span class="tag">納期　7日</span>
+            </div>
+          </details>
+          <details class="acc">
+            <summary><span class="tri"></span>ショート（30秒）<span class="pill">基本 2,000円〜</span></summary>
+            <div class="acc-in">
+              <div class="prow"><span class="k">基本料金</span><span class="v">2,000円</span></div>
+              <div class="prow"><span class="k">ハモリ生成</span><span class="v">＋500円</span></div>
+              <div class="prow"><span class="k">ボーカル追加</span><span class="v">＋1,000円 / 名</span></div>
+              <span class="tag">納期　5日</span>
+            </div>
+          </details>
+          <details class="acc">
+            <summary><span class="tri"></span>オプション</summary>
+            <div class="acc-in">
+              <p class="note" style="margin-bottom:10px;">合計金額に加算されます。</p>
+              <div class="prow"><span class="k">短納期/二日以内</span><span class="v">＋50％</span></div>
+              <div class="prow"><span class="k">ライブ用音源（inst+ハモリ,コーラス）</span><span class="v">＋50％</span></div>
+            </div>
+          </details>
+        </section>
+
+        <section id="c-template">
+          <div class="head"><span class="dia"></span><h2>Request Template</h2><span class="en">依頼テンプレ</span></div>
+          <div class="tmpl">
+            <button class="copy" id="cmCopy" type="button" aria-label="コピー"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span id="cmCopyLabel">COPY</span></button>
+            <pre id="cmTmpl">【曲名】
+
+【本家URL】
+
+【キー変更】
+なし、-2 など
+
+【ボーカル人数】
+
+【ご希望の納期】
+〇日投稿のため、〇日納品希望
+
+【ハモリ生成】
+なし、お任せ、箇所指定など
+
+【ご要望】
+全体のイメージやエフェクト指定、参考音源</pre>
+          </div>
+
+          <details class="acc" style="margin-top:16px;">
+            <summary><span class="tri"></span>音源についてのお願い</summary>
+            <div class="acc-in">
+              <p class="reqlabel">INST</p>
+              <ul class="li">
+                <li>使用許可が出ているものをご用意ください。</li>
+                <li>キー変更が必要な場合はこちらで調整しますので、元音源のまま送付ください。</li>
+              </ul>
+              <p class="reqlabel" style="margin-top:12px;">ボーカル</p>
+              <ul class="li">
+                <li>モノラル／頭出しでお願いいたします。</li>
+                <li>24bit / 48kHz 推奨です。</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <section id="c-flow">
+          <div class="head"><span class="dia"></span><h2>Flow</h2><span class="en">依頼の流れ</span></div>
+          <div class="step"><div class="n">01</div><div><h3>ご相談・ヒアリング</h3></div></div>
+          <div class="step"><div class="n">02</div><div><h3>内容確認</h3><ul class="li"><li>料金やスケジュールをご案内します。</li></ul></div></div>
+          <div class="step"><div class="n">03</div><div><h3>お支払い</h3><ul class="li"><li>内容に問題がなければ、請求書を送付いたします。</li><li>納期までにお振込みをお願いいたします。</li></ul></div></div>
+          <div class="step"><div class="n">04</div><div><h3>納品</h3><ul class="li"><li>納期までに初稿をお送りします。</li><li>修正箇所がなければそのまま納品になります。</li></ul></div></div>
+
+          <div class="hi">
+            <div class="t">クレジット表記について</div>
+            <ul class="li"><li>基本的にはクレジット表記をお願いしております。</li><li>やむを得ない事情がある場合は、ご相談の際にお伝えください。</li></ul>
+            <p class="credit">Mix, Mastering / 來世 @xisz_</p>
+            <p class="note" style="margin-top:4px;">アルファベット表記は LiESE です</p>
+          </div>
+          <div class="hi">
+            <div class="t">修正について</div>
+            <ul class="li"><li>3回まで可能です。</li><li>4回目以降の修正には、作業量に応じた追加料金をいただきます。</li></ul>
+            <p class="note" style="margin-top:10px;">着手後の大幅な変更や音源差し替えは、追加料金の対象となります。</p>
+            <p class="note" style="margin-top:6px;">完成イメージが固まっている、寄せたい音源がある方は、ヒアリングの際に詳しくお伝えください。</p>
+            <p class="note" style="margin-top:6px;">ボーカルのみ（アカペラ）、ライブ用音源等を追加で納品希望の方は、着手前にお伝えください。</p>
+          </div>
+        </section>
+
+        <section id="c-privacy">
+          <div class="head"><span class="dia"></span><h2>Privacy</h2><span class="en">情報の取り扱い</span></div>
+          <details class="acc">
+            <summary><span class="tri"></span>ご依頼情報、個人情報の取り扱いについて</summary>
+            <div class="acc-in">
+              <p>ご依頼情報、個人情報は制作・ご連絡・スケジュール管理のためにのみ使用します。</p>
+              <p style="margin-top:8px;">お預かりした個人情報は厳重に管理し、法令に基づく場合を除き、ご本人の同意なしに第三者へ提供することはありません。</p>
+            </div>
+          </details>
+          <details class="acc">
+            <summary><span class="tri"></span>ご依頼者様側での情報公開について</summary>
+            <div class="acc-in">
+              <p>完成品以外のデータは公開・使用しないでください。</p>
+              <p class="note" style="margin:8px 0;">例）エフェクト確認のために共有した音源、納品後に修正があった場合の修正前音源</p>
+              <p>お見積り金額・個別の料金案内の公開はしないでください。料金は内容や作業量により変動します。誤解やトラブル防止のため、活動者様間であっても公開はお控えください。</p>
+              <p style="margin-top:8px;">また、ご依頼時のやり取りの文面の共有もお控えください。</p>
+            </div>
+          </details>
+          <details class="acc">
+            <summary><span class="tri"></span>実績公開について</summary>
+            <div class="acc-in">
+              <p>完成した音源、投稿された作品を当方のHP・SNSにて掲載させていただく場合があります。その際はご依頼者様のクレジット、投稿作品へのURLを記載します。</p>
+              <p style="margin-top:8px;">掲載不可の場合はお知らせください。また、MIX前の素音源をご依頼者様の許可なく掲載することはありません。</p>
+            </div>
+          </details>
+        </section>
+
+      </div>
+    </div>
+  </section>
+</div>
+
+
+
+<script>
+  var Z = 100;
+  function focusWin(w){ w.style.zIndex = ++Z; }
+  function markTb(id, on){ var b=document.querySelector('.launch[data-win="'+id+'"]'); if(b) b.classList.toggle('active', on); }
+  var startEl = document.querySelector('.start');
+  function openWin(id){
+    document.querySelectorAll('.win').forEach(function(w){ w.classList.remove('open'); });
+    document.getElementById(id).classList.add('open');
+    if(startEl) startEl.style.display='none';
+    window.scrollTo(0,0); markTb(id, true);
+  }
+  function closeWin(id){
+    document.getElementById(id).classList.remove('open');
+    if(startEl) startEl.style.display='';
+    markTb(id, false);
+  }
+  function toggleWin(id){ var w=document.getElementById(id); w.classList.contains('open') ? closeWin(id) : openWin(id); }
+
+  document.querySelectorAll('.win').forEach(function(w){
+    w.addEventListener('mousedown', function(){ focusWin(w); });
+  });
+
+
+  (function(){
+    var content = document.getElementById('cmContent');
+    var links = Array.prototype.slice.call(document.querySelectorAll('#win-commission .side a'));
+    var secs = links.map(function(a){ return document.getElementById(a.getAttribute('data-go')); });
+    links.forEach(function(a){
+      a.addEventListener('click', function(){
+        var t = document.getElementById(a.getAttribute('data-go'));
+        if(t) content.scrollTo({ top: t.offsetTop - 6, behavior:'smooth' });
+      });
+    });
+    function onScroll(){
+      var pos = content.scrollTop + 40, cur = 0;
+      for(var i=0;i<secs.length;i++){ if(secs[i] && secs[i].offsetTop <= pos) cur = i; }
+      links.forEach(function(a,i){ a.classList.toggle('active', i===cur); });
+    }
+    content.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+  })();
+
+  (function(){
+    var btn=document.getElementById('cmCopy'), lbl=document.getElementById('cmCopyLabel'), text=document.getElementById('cmTmpl').innerText;
+    btn.addEventListener('click', function(){
+      function done(){ btn.classList.add('done'); lbl.textContent='COPIED!';
+        setTimeout(function(){ btn.classList.remove('done'); lbl.textContent='COPY'; }, 1600); }
+      function fb(){ var a=document.createElement('textarea'); a.value=text; a.style.position='fixed'; a.style.opacity='0';
+        document.body.appendChild(a); a.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(a); done(); }
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(fb); } else { fb(); }
+    });
+  })();
+
+  /* ============================================================
+     Schedule（PROFILE内カレンダー）
+     予定の追加・編集は、下の SCH_EVENTS 配列を書き換えるだけでOKです。
+     1件分の書き方:
+       { date: "2026-07-08", time: "22:00", title: "歌枠", icon: "icon_utawak.png" }
+     - date  : "YYYY-MM-DD" 形式
+     - time  : "HH:MM" 形式（省略可。省略すると時間は表示されません）
+     - title : カレンダー下の「直近の予定」に出るタイトル
+     - icon  : "SCHEDULE ICON" フォルダ内のファイル名
+               (icon_utawak.png / icon_roudoku.png / icon_game.png /
+                icon_toukou.png / icon_shorts.png など)
+     ============================================================ */
+  (function(){
+    var SCH_EVENTS = [
+      { date: "2026-07-04", time: "22:00", title: "配信：麻雀勉強会",       icon: "icon_game.png" },
+      { date: "2026-07-05", time: "22:00", title: "朗読配信：右園死児報告", icon: "icon_roudoku.png" }
+    ];
+    var ICON_DIR = "SCHEDULE ICON/";
+
+    var grid = document.getElementById('schGrid');
+    if(!grid) return;
+    var monthLabel = document.getElementById('schMonthLabel');
+    var upcomingEl = document.getElementById('schUpcoming');
+    var today = new Date();
+    var viewY = today.getFullYear(), viewM = today.getMonth();
+
+    function pad(n){ return (n<10?'0':'')+n; }
+    function dateKey(y,m,d){ return y+'-'+pad(m+1)+'-'+pad(d); }
+    function esc(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+    function eventsOn(k){ return SCH_EVENTS.filter(function(e){ return e.date===k; }); }
+
+    function renderCal(){
+      monthLabel.textContent = (viewY)+'.'+pad(viewM+1);
+      grid.innerHTML = '';
+
+      var first = new Date(viewY, viewM, 1);
+      var startWd = first.getDay();
+      var daysInMonth = new Date(viewY, viewM+1, 0).getDate();
+      var daysInPrev = new Date(viewY, viewM, 0).getDate();
+
+      var cells = [];
+      for(var i=startWd-1;i>=0;i--){
+        cells.push({day:daysInPrev-i, other:true, y:viewM===0?viewY-1:viewY, m:viewM===0?11:viewM-1});
+      }
+      for(var d=1; d<=daysInMonth; d++){ cells.push({day:d, other:false, y:viewY, m:viewM}); }
+      while(cells.length%7!==0 || cells.length<42){
+        var last = cells[cells.length-1];
+        if(cells.length>=35 && cells.length%7===0) break;
+        cells.push({day:last.day+1, other:true, y:viewM===11?viewY+1:viewY, m:viewM===11?0:viewM+1});
+      }
+
+      var todayKey = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
+
+      cells.forEach(function(c){
+        var key = dateKey(c.y, c.m, c.day);
+        var cell = document.createElement('div');
+        cell.className = 'sch-day' + (c.other?' other':'') + (key===todayKey?' today':'');
+        var num = document.createElement('div');
+        num.className = 'n';
+        num.textContent = c.day;
+        cell.appendChild(num);
+        eventsOn(key).slice(0,1).forEach(function(e){
+          var img = document.createElement('img');
+          img.src = ICON_DIR + e.icon;
+          img.alt = e.title;
+          img.title = (e.time ? e.time+' ' : '') + e.title;
+          cell.appendChild(img);
+        });
+        grid.appendChild(cell);
+      });
+    }
+
+    function renderUpcoming(){
+      var now = new Date(); now.setHours(0,0,0,0);
+      var upcoming = SCH_EVENTS
+        .filter(function(e){ return new Date(e.date+'T00:00:00') >= now; })
+        .sort(function(a,b){ return a.date.localeCompare(b.date); })
+        .slice(0,5);
+
+      if(upcoming.length===0){
+        upcomingEl.innerHTML = '<div class="sch-empty">予定はまだありません</div>';
+        return;
+      }
+      upcomingEl.innerHTML = '';
+      upcoming.forEach(function(e){
+        var dt = new Date(e.date+'T00:00:00');
+        var item = document.createElement('div');
+        item.className = 'sch-item';
+        item.innerHTML =
+          '<span class="date">'+(dt.getMonth()+1)+'/'+dt.getDate()+(e.time?'<br>'+esc(e.time):'')+'</span>'+
+          '<img src="'+ICON_DIR+e.icon+'" alt="">'+
+          '<span class="t">'+esc(e.title)+'</span>';
+        upcomingEl.appendChild(item);
+      });
+    }
+
+    document.getElementById('schPrev').addEventListener('click', function(){
+      viewM--; if(viewM<0){viewM=11; viewY--;} renderCal();
+    });
+    document.getElementById('schNext').addEventListener('click', function(){
+      viewM++; if(viewM>11){viewM=0; viewY++;} renderCal();
+    });
+
+    renderCal();
+    renderUpcoming();
+  })();
+
+</script>
+</body>
+</html>
+                                                              
